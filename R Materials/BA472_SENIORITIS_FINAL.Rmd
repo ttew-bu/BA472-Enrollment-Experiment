@@ -1,0 +1,324 @@
+---
+title: "Effect of Group Projects on Willingness to Take a College Class at Boston University"
+author: "Tanvi Agarwal, James Cox, Brett Rado, Tristan Tew, and Tiff Truong"
+date: "December 8, 2021"
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document:
+    df_print: paged
+---
+
+```{r, echo=FALSE, warning=FALSE,message=FALSE}
+library(tidyverse)
+library(data.table)
+library(fixest)
+library(tidyr)
+library(modelsummary)
+library(pwr)
+library(kableExtra)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.pos= "H", echo = TRUE)
+```
+
+```{r, echo=FALSE, results='hide'}
+data <- read.csv("C:/Users/trist/OneDrive/Desktop/BA472_PROJECT_DATASET.csv")
+```
+
+# Introduction 
+
+Educators have been divided over the efficiency of test-taking for years. Some believe it to be a valuable tool in enhancing a student’s understanding of the course. In contrast, others urge that exams can take time away from actual learning and do not promote information retention. A common argument made in favor of group projects is that students will ultimately get a job in places where they interact with others. Having collaborative projects can allow students to cultivate creativity, flexibility, and their ability to work with others (Bloom 216).  
+
+A two-year study performed by Dr. Bloom at SUNY showed that collaborative tests were significantly better than individual test-taking when comparing students’ retention of concepts. Furthermore, the collaboration also helped students have positive relationships with peers and decreased the competitive, individualistic nature of the learning environment (Bloom 217). Another study conducted in North Carolina about the benefits of group projects stated that students found themselves more focused and more actively engaged during the projects. This further allowed them to apply the concepts they learned in class to real scenarios (Pedro 4).  
+ 
+While the related literature highlights the benefits of group projects, none particularly highlight how they may affect students' motivations for choosing their classes. By exploring the relationship between enrollment and replacing a final exam with a group project, we hope to help students, instructors, and other curriculum administrators. This research could motivate universities to adjust curricula to best fit the students’ wants for their university experience. For professors on the edge of having their classes cancelled or administrators struggling to get a department filled with students, this research presents an opportunity to reach registration thresholds and create ideal learning environments.
+
+To explore this, we conducted an experiment with 66 undergraduate students at Boston University to answer the question of whether introducing a final group project over a final exam will increase enrollment rates. Our hypothesis was that introducing a group project, our treatment, will increase the willingness to sign up for a class. 
+
+# Methods
+
+## Participation 
+
+We chose to solely observe undergraduate Boston University students because those were both easy to sample and the fact that both course codes and the curriculum vary by university. First, we sent out a Google Form to get signups so that we could later track student responses to our experiment (Appendix Exhbit 1). As we would get signups, we would send the Qualtrics survey to the students via email (Appendix Exhbit 2). We got 69 signups, 66 of which finished the final survey after several rounds of follow up emails. There were a disproportionately high number of students in the business school, 39.4% of our sample, and disproportionately few people from the engineering school, which was only 3% of our sample. We also saw far more seniors, 57.6% of our sample, than freshmen, who were only 9.1% of our sample. Since these were two variables with large disparities from the actual proportions on campus, we found it especially important to ensure that we randomized properly on these variables. 
+
+## Randomization Methods
+
+For the purposes of this experiment, we utilized simple randomization at the student-syllabus level. That is, for each student taking our survey, we randomized each version of the six syllabi they saw. One advantage of using student-syllabus randomization is that we were able to increase our statistical power by getting six student-syllabus pairs per survey response for a total of 396 instances. By utilizing the Qualtrics “randomizer,” we were able to administer either the treatment or control in nearly equal quantities. While we originally wanted to block the syllabi so that each person would receive three treatment and three control syllabi, technical limitations within Qualtrics prevented us from pursuing this idea. As a result, we went with simple randomization. Our simple randomization did not perfectly return a 50/50 split and the treatment was administered 51.7% of the time.
+
+## Randomization Check
+
+Before beginning our analysis, we wanted to ensure that the randomization within our experiment worked and that there were no noticeable differences between the treatment and control on the basis of the covariates we wanted to explore. We could not find a significant difference in our treatment and control on the basis of class year (Appendix Table 1). Additionally, we did not find a difference on our variable seeing if an individual had taken a class in that department previously, being a transfer student, or being an international student (Appendix Table 2). 
+
+Looking at the table below, you will notice that we did see that there was a statistically significant relationship between being in the College of Engineering and the School of Education with our treatment. You can find a complete table of randomization checks by school in the appendix (Appendix Table 3). We believe this occurred because of the small number of respondents in each school: two and one respondents, respectively. Since the sample for these schools was so small, this was a possible outcome with simple randomization. Since this affected less than 5% of our data and all of the other randomization checks were successful, we are confident that our randomization did not assign the treatment disproportionately overall and can continue into the analysis. 
+
+
+```{r echo=FALSE,warning=FALSE}
+
+eng_rando_check <- feols( TREATED ~ ENG, data=data,se='hetero')
+sed_rando_check <- feols( TREATED ~ SED, data=data,se='hetero')
+
+modelsummary(list("ENG Randomization Check"=eng_rando_check, "SED Randomization Check"=sed_rando_check), stars = TRUE, gof_omit = 'R2|R2 Adj.|R2 Within|R2 Psuedo|AIC|BIC|Log.Lik.|Std.Errors') %>% kable_styling(latex_options = "HOLD_position")
+```
+# Procedure 
+
+We started by creating our own syllabi for six made up classes in real departments at Boston University. Our intent with this was to avoid capturing people's opinions toward a specific class and more generally if they thought a group project made more sense than a final exam. Each syllabus had a written description, grading set, and course code. To ensure excludability, we only changed the final exam or group project as the bottom object on each grading set for a syllabus. We made sure not to change any other parts of the syllabus, especially the grading criteria, between a treatment or control for each class (Appendix Exhibit 3, Exhibit 4). We began the experiment by running a small pilot with six individuals to work out several bugs in our survey delivery. Primarily, this allowed us to work out the randomization so that each person would receive exactly one copy of each class’ syllabus. We also used the pilot to confirm that students were not apprehensive about letting us ask for GPA, so we were able to include this variable in our final survey. After the pilot, we reached out to our 66 participants over email and deployed the survey. The only drawback behind the email approach was that we could not ensure participants did not speak with each other about the survey; however, we were not concerned about major violations of non-interference. 
+
+Each individual who filled out our sign up was given a Qualtrics survey that would ask them for name, class year, school, international student status, transfer status, and GPA before starting the experiment. The survey then presented syllabi from the six classes we created for this experiment, and finished by asking if students had taken classes in those departments before. For example, we gave a syllabus with a BA prefix to our respondents, so we also asked them whether or not they had taken a BA class before at the survey's end. We believed that adding a variable to track whether or not somebody has past experience with a department could be a useful covariate.
+
+Since we took names in our experiment sign-up, we were able to follow-up with individuals who did not fill out the survey on the first try. Within 72 hours, we shut down the survey with all but three of those who signed up accounted for. Before we did any data analysis, we made sure to remove the names from our CSV file to preserve the privacy of students’ GPAs. 
+
+# Data Analysis
+
+## Average Treatment Effect Estimate
+
+We observed the 396 student-syllabus pairs from the Qualtrics survey to perform the analyses below. After performing our randomization checks, our first analysis was to see if we could get the average treatment effect estimate from a basic regression. As you can see in the output below, we found a positive 5.0 percentage point estimate for this regression, which means that we see increased sign-up rates when students presented with a syllabus with a final project for a given class. However, this result was not statistically significant. 
+
+```{r, echo=FALSE,warning=FALSE}
+ate_estimate_basic_regression <- feols(RESULT ~ TREATED, data=data,se='hetero')
+modelsummary(list("Basic ATE Regression"=ate_estimate_basic_regression), stars = TRUE, gof_omit = 'R2|R2 Adj.|R2 Within|R2 Psuedo|AIC|BIC|Log.Lik.|Std.Errors') %>% kable_styling(latex_options = "HOLD_position")
+```
+
+## Covariates to Improve Precision
+
+To see if we could improve the precision of our understanding of student signups, we decided to add pre-treatment covariates to our regression model. We chose to add variables which had no issues with the randomization check as well. So, we tested whether or not a student had taken a class in that department previously, their transfer student status, their international student status. In an effort to avoid p-hacking, we did not include the school variable or class year here because that would add seven more predictors, one per school less one excluded school, to our regression. Under the same rationale, we kept the class years out of this analysis as well. 
+
+
+```{r, echo=FALSE,warning=FALSE}
+covariate_reg<- feols(RESULT ~ TREATED + SEEN_BEFORE + INTERNATIONAL_STUDENT + TRANSFER_STUDENT, data=data,se='hetero')
+modelsummary(list("Covariate Regression"=covariate_reg), stars = TRUE, gof_omit = 'R2|R2 Adj.|R2 Within|R2 Psuedo|AIC|BIC|Log.Lik.|Std.Errors') %>% kable_styling(latex_options = "HOLD_position")
+```
+
+As you can see in the output above, we still see a similar treatment effect of 4.7 percentage points, the standard errors did not change, and that the relationship is not statistically significant. We saw a 13.2 percentage point decrease in sign-ups for transfer students and a 5.4 percentage point increase in sign-ups for international students. These were also not statistically significant at the 95% level. 
+
+We see one statistically significant coefficient on whether or not a student had taken a class in that department before. This means that people who have taken at least one class in a department see a 14.6 percentage point increase in their signup rate, but this does not relate to the treatment. The interpretation of this is that students are more likely to take a class once they have taken at least one class in a department. This could be different curriculum requirements for majors or minors, but we did not have the major level data, so clarifying this relationship is an opportunity for future research. 
+
+## Heterogeneity Among Class Years
+
+We also thought it would be relevant to explore our data for heterogeneous treatment effects. The first analysis we wanted to test for heterogeneous treatment effects was testing by class year with the intuition that being in different years of college could lead to a different approach to selecting classes. 
+
+```{r, echo=FALSE,warning=FALSE}
+frreg <- feols(RESULT ~ TREATED * FRESHMAN, data=data, se='hetero')
+spreg <- feols(RESULT ~ TREATED * SOPHOMORE, data=data, se='hetero')
+jrreg <- feols(RESULT ~ TREATED * JUNIOR, data=data, se='hetero')
+srreg <- feols(RESULT ~ TREATED * SENIOR, data=data, se='hetero')
+modelsummary(list("Freshmen"=frreg,"Sophomores"=spreg,"Juniors"=jrreg,"Seniors"=srreg), stars = TRUE, gof_omit = 'R2|R2 Adj.|R2 Within|R2 Psuedo|AIC|BIC|Log.Lik.|Std.Errors', coef_omit='^(?!.*TREATED)(?!.*\\(Int)') %>% kable_styling(latex_options = "HOLD_position")
+```
+
+The table above shows the interaction terms we found when looking for heterogeneous treatment effects across class years; you can find the full table in appendix table 5. Our first observation was that there is a statistically significant interaction term for being a senior and receiving the treatment. Using imprecise estimates from our regression interaction terms, the .21 coefficient here tells us that treated seniors see an increase in enrollment relative to treated non-seniors. We see a -.22 interaction term for juniors, indicating that juniors are less likely to sign up for a class when presented with a final project relative to treated non-juniors; however, this was not statistically significant. Sophomores and freshmen also have negative interaction terms, which indicates a similar interpretation to the juniors; however, we cannot be confident in this at the 95% confidence level. 
+
+While not all of the values above were statistically significant, we wanted to visualize sign up by class year to get an imprecise estimate of the conditional average treatment effect. 
+
+```{r, echo=FALSE, warning=FALSE,message=FALSE,fig.align='center',fig.height = 3, fig.width =5.3}
+aggdf <- data %>% group_by(YEAR,TREATED) %>% summarise(RESULT_AGG=mean(RESULT))
+
+
+aggdf$RESULT_AGG <- sapply(aggdf$RESULT_AGG, as.numeric)
+aggdf$TREATED <- sapply(aggdf$TREATED, as.character)
+
+aggdf$YEAR  <- factor(aggdf$YEAR , levels = c("Freshman","Sophomore", "Junior", "Senior"))
+
+years_plot <- ggplot(aggdf, aes(x=reorder(YEAR, YEAR, function(x)-length(x)), y=RESULT_AGG, fill=TREATED)) + geom_bar(position="dodge"
+                                  ,stat="identity") + ggtitle("Average Enrollment Rates By Year") +xlab("Class Year") + ylab("Enrollment Rate") +labs(fill="Treatment Assignment") + theme_classic() + scale_fill_manual(values=c("#2D2926","#CC0000"),labels=c("Control","Treatment"))
+                                                                                                                                                      
+years_plot
+```
+
+In this chart, the gap between the treated and controlled bar for each year is representative of an estimate of the conditional ATE for each of these class years. It should be noted that not all coefficients from the CATE regression here are statistically significant (Appendix Table 5). However, this chart highlights a pattern of increased favoritism toward exams prior to senior year, but then seniors suddenly have a much larger preference for projects. When we look at the heterogeneity regressions for year and this chart, the key question is why there is such a large attitudinal shift for senior year. Since the interaction term was statistically significant, we can say that seniors prefer group projects relative to non-seniors that are treated and future work can be dedicated to answering why this is as opposed to finding the trend itself. 
+
+## Heterogeneity Among Different Classes
+One other avenue that we wanted to explore for heterogeneity was exploring the behavior on a class-by-class basis. Our assertion here was that the treatment effect may differ depending on the class that is offering a group project over an exam. 
+
+```{r echo=FALSE, warning=FALSE,message=FALSE}
+
+survey_1_reg <- feols(RESULT ~ TREATED*SURVEY_1, data=data)
+survey_2_reg <- feols(RESULT ~ TREATED*SURVEY_2, data=data)
+survey_3_reg <- feols(RESULT ~ TREATED*SURVEY_3, data=data)
+survey_4_reg <- feols(RESULT ~ TREATED*SURVEY_4, data=data)
+survey_5_reg <- feols(RESULT ~ TREATED*SURVEY_5, data=data)
+survey_6_reg <- feols(RESULT ~ TREATED*SURVEY_6, data=data)
+modelsummary(list("BA"= survey_1_reg ,"CM"=survey_2_reg ,"AR"=survey_3_reg ,"EK"=survey_4_reg ,"HP"=survey_5_reg ,"AN"=survey_6_reg), stars = TRUE, gof_omit = 'R2|R2 Adj.|R2 Within|R2 Psuedo|AIC|BIC|Log.Lik.|Std.Errors', coef_omit='^(?!.*TREATED)(?!.*\\(Int)') %>% kable_styling(latex_options = "HOLD_position")
+
+```
+
+Based on the table above, we can see that there are many classes with large interaction terms; you can find the full table of coefficients in appendix table 6. Despite the fact that they are not statistically significant, the point estimates of the interaction terms suggest that people have different attitudes toward group projects based on the class they're looking at. For example, when a student gets treated and views a BA syllabus, they are more likely to sign up relative to those treated and looking at another syllabus. On the other hand, observe that people may be less likely to take a AR class if it has a group project relative to those who are looking at other syllabi with group projects. The large point estimates for each of these interaction terms, while not statistically significant at the 95% level, highlight the idea that some classes may be better off with final projects than others and warrants further research so that these trends can be backed with a higher level of confidence.
+
+```{r,echo=FALSE, warning=FALSE,message=FALSE,fig.align='center',fig.height = 3, fig.width = 5.3}
+aggdf <- data %>% group_by(SYLLABUS_NUM,TREATED) %>% summarise(RESULT_AGG=mean(RESULT))
+
+aggdf$RESULT_AGG <- sapply(aggdf$RESULT_AGG, as.numeric)
+aggdf$TREATED <- sapply(aggdf$TREATED, as.character)
+
+aggdf$YEAR  <- factor(aggdf$SYLLABUS_NUM , levels = c("1","2", "3", "4","5","6"))
+
+syll_plot <- ggplot(aggdf, aes(x=reorder(SYLLABUS_NUM, SYLLABUS_NUM, function(x)-length(x)), y=RESULT_AGG, fill=TREATED)) + geom_bar(position="dodge"
+                                  ,stat="identity") + ggtitle("Average Enrollment Rates By Syllabus") +xlab("Syllabus") + ylab("Enrollment Rate") +labs(fill="Treatment Assignment") + theme_classic() + scale_fill_manual(values=c("#2D2926","#CC0000"),labels=c("Control","Treatment")) + scale_x_discrete(labels=c("BA","CM","AR","EK","HP","AN"))
+                                                                                                                                                      
+syll_plot
+```
+
+In the visualization above, we can observe the gap between treatment assignments as an imprecise reflection of the conditional ATE for each of our class syllabi. Like the first chart, not all coefficients that comprise this CATE estimate are not statistically significant. However, a key observation of appendix table 6 is that the coefficients for certain classes, AN, are statistically significant at the 95% level. This  means that we can be confident that the anthropology class has a much higher enrollment rate than other classes independent of the treatment and this is clearly reflected in the chart. Like we saw from the interaction terms, it appears that there is a large point estimate difference in willingness to sign up for the BA class between group project and final exam, but we cannot confirm this at the 95% percent confidence level (Appendix Table 6). Overall, this chart illustrates the range of outcomes for each of the classes we tested and an imprecise estimate of how the treatment affects enrollment in each class.
+
+## Fixed Effects
+
+In an effort to account for the differences of each person, both those we asked questions about and those we did not consider, we elected to run a regression on our treatment using a fixed effect at the individual level. The output below shows us that when we account for the differences between people using fixed effects, we see an average treatment estimate of 10.5 percentage points, which is larger than our original regression estimate. 
+
+```{r echo=FALSE,warning=FALSE}
+fixed_effect_person_ATE_est <- feols(RESULT ~ TREATED | SURVEYID, data=data)
+modelsummary(list("Survey ID Fixed Effect"=fixed_effect_person_ATE_est), stars = TRUE, gof_omit = 'R2|R2 Adj.|R2 Within|R2 Psuedo|AIC|BIC|Log.Lik.|Std.Errors') %>% kable_styling(latex_options = "HOLD_position")
+```
+
+Once again, this tells us is that when we account for the differences between individuals, one's willingness to sign up for a project-based class increases. While our standard errors reduced and we saw a far larger t value than the original regression by doing this, we did not find this relationship to be statistically significant. Thus, we cannot conclude that there is a treatment effect when accounting for fixed effects at the 95% confidence level. 
+
+# Limitations
+We must acknowledge the effect of limited resources, technological limitations, unseen variables, and biases in experiment. Our sample is not representative of college students across the United States because we only observed undergraduates at Boston University. While this was within the scope of the experiment, we cannot conclude that the effects listed above generalize to other universities. To ensure we reached a sufficient quantity of respondents, we relied on convenience sampling for much of our data collection. This often involved reaching out to friends, classmates, and other individuals within our networks, which introduces a degree of selection bias. There is also selection bias in the classes that we made syllabi for as we represented a subset of schools at Boston University. Our team initially planned for each student to have three control syllabi and three treatment syllabi. However, we were unable to do so as it was technically complex to execute in Qualtrics, leading to a small reduction in statistical power. We were able to get six instances per respondee, which led to 396 instances. This paired with the other parameters gave us a statistical power of .166 for our first treatment effect regression (Appendix Output 1). We would recommend that any follow up experiments have at least 1596 student-syllabus pairs in each of the treatment and control to reach an 0.80 power (Appendix Output 2).
+
+One other limitation of our experimental design is that it did not account for all previous classes one has taken nor their majors. We did notice that taking a class previously increases enrollment, but without this data we cannot fully understand why. Moreover, asking about previous classes does not indicate how a student’s emotional experiences with a related class shapes their expectation of another. These factors could have been vital to a student’s decision to enroll in a class, but they are factors that are difficult to properly measure and analyze. One final limitation of our analysis was that we asked first-semester freshmen for GPA when they don’t have one. While we could have pursued a workaround involving dummy variables for missing GPAs, we elected not to do so and thus we could not explore the relationship between GPA, the treatment, and enrollment. By understanding and responding to these limitations, further research on the topic can be more conclusive and generalizable.  
+
+
+# Conclusion 
+
+By exposing students to different versions of syllabi with exams or group projects as the final assessments, we were able to identify several opportunities for future work. We did not find a statistically significant average treatment effect between the control and treatment syllabi, thus we cannot reject the null hypothesis that introducing a group project will affect student enrollment. We utilized person-level fixed effects to account for the differences between students and got a larger point estimate, but this result was not significant either. 
+
+While we could not identify a statistically significant average treatment effect with or without fixed effects, we found a statistically significant interaction term between being a senior and receiving the treatment. This presents suggestive evidence that when someone is a senior, they may be more willing to take classes with final group projects relative to people of other class years. With 95% confidence, we also found that anthropology courses have a higher base enrollment rate relative to other classes tested and that taking at least one class in a department has a positive effect on enrolling in another class from that department; however, these observations were unrelated to our treatment. We did not find statistically significant interaction terms or treatment effects for heterogeneity across the different classes we presented syllabi for. However, this was another case where we saw large point estimates and different effects by class that deserve a follow up experiment with higher statistical power. 
+
+Between the analysis and limitations, this work lays the foundation for future research in higher education curriculum design and presents frameworks to analyze students' characteristics and departmental differences to optimize enrollment. 
+
+# Bibliography 
+
+Bloom, Davida. “Collaborative Test Taking: Benefits for Learning and Retention.” College Teaching, vol. 57, no. 4, 2009, pp. 216–220.
+
+Pedro Arce. “Group Projects Based Final Exams.” Association for Engineering Education - Engineering Library Division Papers, 1999, p. 4.281.1.
+
+# Appendix
+
+## Sign Up Form (Appendix Exhibit 1)
+
+```{r, echo=FALSE,out.width = '200px'}
+knitr::include_graphics("C:/Users/trist/Downloads/BA472_FORM_A.JPG")
+knitr::include_graphics("C:/Users/trist/Downloads/BA472_FORM_B.JPG")
+```
+
+## Reminder Email (Appendix Exhibit 2)
+
+```{r, echo=FALSE,out.width = '400px'}
+
+knitr::include_graphics("C:/Users/trist/Downloads/BA472_EMAIL.JPG")
+
+```
+
+## Sample of Treatment Syllabus (Appendix Exhibit 3)
+
+```{r, echo=FALSE,out.width = '400px'}
+
+knitr::include_graphics("C:/Users/trist/Downloads/TREAT5.JPG")
+
+```
+
+
+## Sample of Control Syllabus (Appendix Exhibit 4)
+
+```{r, echo=FALSE,out.width = '400px'}
+
+knitr::include_graphics("C:/Users/trist/Downloads/CONTROL5.JPG")
+
+```
+
+
+## Extra Randomization Check for Class Year (Table 1)
+
+```{r, echo=FALSE,warning=FALSE}
+
+testreg_fresh <- feols( TREATED ~ FRESHMAN, data=data, se='hetero')
+testreg_soph <- feols(  TREATED ~ SOPHOMORE, data=data, se='hetero')
+testreg_junior <- feols( TREATED ~ JUNIOR, data=data, se='hetero')
+testreg_senior <- feols( TREATED ~ SENIOR, data=data, se='hetero')
+modelsummary(list("Freshmen"=testreg_fresh,"Sophomores"=testreg_soph,"Juniors"=testreg_junior,"Seniors"=testreg_senior), stars = TRUE, gof_omit = 'Std.Errors') %>% kable_styling(latex_options = "HOLD_position")
+
+```
+
+## Extra Randomization Check for Other Covariates (Table 2)
+```{r, echo=FALSE,warning=FALSE}
+
+testreg_int <- feols( TREATED ~ INTERNATIONAL_STUDENT, data=data, se='hetero')
+testreg_transf <- feols(  TREATED ~ TRANSFER_STUDENT, data=data, se='hetero')
+testreg_seen_before <- feols( TREATED ~ SEEN_BEFORE, data=data, se='hetero')
+modelsummary(list("International Student"=testreg_int,"Transfer Student"=testreg_transf,"Seen Before"=testreg_seen_before), stars = TRUE, gof_omit = 'Std.Errors') %>% kable_styling(latex_options = "HOLD_position")
+
+```
+
+## Extra Randomization Check for School (Table 3)
+
+```{r, echo=FALSE,warning=FALSE}
+cas <- feols( TREATED ~ CAS, data=data,se='hetero')
+com <- feols(  TREATED ~ COM, data=data,se='hetero')
+qst <- feols( TREATED ~ QST, data=data,se='hetero')
+sha <- feols( TREATED ~ SHA, data=data,se='hetero')
+eng <- feols( TREATED ~ ENG, data=data,se='hetero')
+sed <- feols( TREATED ~ SED, data=data,se='hetero')
+sar <- feols( TREATED ~ SAR, data=data,se='hetero')
+pardee <- feols( TREATED ~ PARDEE, data=data,se='hetero')
+
+modelsummary(list("CAS"=cas,"COM"=com,"QST"=qst,"SHA"=sha,"ENG"=eng,"SED"=sed,"SAR"=sar,"PARDEE"=pardee), stars = TRUE, gof_omit = 'Std.Errors') %>% kable_styling(latex_options = "HOLD_position")
+```
+
+## Extra Randomization Checks for Survey Assigment (Table 4)
+
+```{r, echo=FALSE,warning=FALSE}
+
+testreg1 <- feols( TREATED ~ SURVEY_1, data=data,se='hetero')
+testreg2 <- feols(  TREATED ~ SURVEY_2, data=data,se='hetero')
+testreg3 <- feols( TREATED ~ SURVEY_3, data=data,se='hetero')
+testreg4 <- feols( TREATED ~ SURVEY_4, data=data,se='hetero')
+testreg5 <- feols( TREATED ~ SURVEY_5, data=data,se='hetero')
+testreg6 <- feols( TREATED ~ SURVEY_6, data=data,se='hetero')
+modelsummary(list("BA"= testreg1 ,"CM"=testreg2 ,"AR"=testreg3 ,"EK"=testreg4 ,"HP"=testreg5 ,"AN"=testreg6), stars = TRUE, gof_omit = 'Std.Errors') %>% kable_styling(latex_options = "HOLD_position")
+```
+
+## Power of our Experiment (Output 1)
+
+```{r echo=FALSE, warning=FALSE,message=FALSE}
+
+
+ATE_EST <- mean(filter(data, TREATED == 1)$RESULT) - mean(filter(data, TREATED == 0)$RESULT)
+
+pwr.t2n.test(n1=dim(filter(data, TREATED==1))[1], n2=dim(filter(data, TREATED==0))[1], d=(ATE_EST/sd(data$RESULT)))
+
+```
+
+## Required Student-Syllabus Pairs for an Experiment with 80% Power (Output 2)
+
+```{r echo=FALSE, warning=FALSE,message=FALSE}
+
+
+ATE_EST <- mean(filter(data, TREATED == 1)$RESULT) - mean(filter(data, TREATED == 0)$RESULT)
+
+pwr.t.test(d=(ATE_EST/sd(data$RESULT)),sig.level = .05,power=.8)
+
+```
+
+## Full table showing heterogeneity between class years (Table 5)
+
+```{r echo=FALSE, warning=FALSE,message=FALSE}
+frreg <- feols(RESULT ~ TREATED * FRESHMAN, data=data, se='hetero')
+spreg <- feols(RESULT ~ TREATED * SOPHOMORE, data=data, se='hetero')
+jrreg <- feols(RESULT ~ TREATED * JUNIOR, data=data, se='hetero')
+srreg <- feols(RESULT ~ TREATED * SENIOR, data=data, se='hetero')
+modelsummary(list("Freshmen"=frreg,"Sophomores"=spreg,"Juniors"=jrreg,"Seniors"=srreg), stars = TRUE, gof_omit = 'Std.Errors') %>% kable_styling(latex_options = "HOLD_position")
+```
+
+## Full table showing heterogeneity between classes (Table 6)
+
+```{r echo=FALSE, warning=FALSE,message=FALSE}
+
+survey_1_reg <- feols(RESULT ~ TREATED*SURVEY_1, data=data, se='hetero')
+survey_2_reg <- feols(RESULT ~ TREATED*SURVEY_2, data=data, se='hetero')
+survey_3_reg <- feols(RESULT ~ TREATED*SURVEY_3, data=data, se='hetero')
+survey_4_reg <- feols(RESULT ~ TREATED*SURVEY_4, data=data, se='hetero')
+survey_5_reg <- feols(RESULT ~ TREATED*SURVEY_5, data=data, se='hetero')
+survey_6_reg <- feols(RESULT ~ TREATED*SURVEY_6, data=data, se='hetero')
+modelsummary(list("BA"= survey_1_reg ,"CM"=survey_2_reg ,"AR"=survey_3_reg ,"EK"=survey_4_reg ,"HP"=survey_5_reg ,"AN"=survey_6_reg), stars = TRUE, gof_omit = 'Std.Errors') %>% kable_styling(latex_options = "HOLD_position")
+
+
+```
